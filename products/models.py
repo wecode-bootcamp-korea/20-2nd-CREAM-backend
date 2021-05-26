@@ -1,6 +1,6 @@
 from django.db import models
 
-class brand(models.Model):
+class Brand(models.Model):
     name       = models.CharField(max_length=45)
     logo_image = models.URLField()
 
