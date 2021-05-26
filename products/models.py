@@ -1,7 +1,7 @@
 from django.db import models
 
 class Brand(models.Model):
-    name       = models.CharField(max_length=45)
+    name       = models.CharField(max_length=200)
     logo_image = models.URLField()
 
     class Meta:
@@ -11,7 +11,7 @@ class Brand(models.Model):
         return self.name
 
 class Collection(models.Model):
-    name  = models.CharField(max_length=100)
+    name  = models.CharField(max_length=200)
     brand = models.ForeignKey("Brand", on_delete=models.CASCADE)
 
     class Meta:
@@ -20,10 +20,9 @@ class Collection(models.Model):
     def __str__(self):
         return self.name
 
-
 class Product(models.Model):
-    korean_name  = models.CharField(max_length=60)
-    english_name = models.CharField(max_length=60)
+    korean_name  = models.CharField(max_length=200)
+    english_name = models.CharField(max_length=200)
     limited      = models.BooleanField(default=False)
     collection   = models.ForeignKey("Collection", on_delete=models.CASCADE)
 
