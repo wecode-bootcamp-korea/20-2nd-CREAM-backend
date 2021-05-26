@@ -33,7 +33,7 @@ class Product(models.Model):
         return self.korean_name
 
 class ProductImage(models.Model):
-    product   = models.ForeignKey("Product", models.CASCADE)
+    product   = models.ForeignKey("Product", on_delete=models.CASCADE)
     image_url = models.URLField()
 
     class Meta:
@@ -45,4 +45,3 @@ class ProductOption(models.Model):
 
     class Meta:
         db_table = "product_options"
-
