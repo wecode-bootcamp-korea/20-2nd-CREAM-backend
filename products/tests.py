@@ -1,6 +1,7 @@
 import json
+from django.http import response
 
-from django.test     import TestCase
+from django.test     import TestCase, client
 from django.test     import Client
 
 from products.models import Collection, Product, ProductOption, ProductImage, Brand
@@ -162,3 +163,30 @@ class ProductTest(TestCase):
         response = client.get('/products/10/order')
 
         self.assertEqual(response.status_code, 400)
+
+    def test_biddingsell_get_success(self):
+        client   = Client()
+        response = client.get('/products/1/sellbidding')
+
+        self.assertEqual(response.json(),{
+            "selling_bidding" : [
+                {
+                    "size" : "250",
+                    "price" : "240000.0000"
+                    },
+                    {"size" : "250",
+                    "price" : "340000.0000"
+                    }
+                    ]})
+
+        self.assertEqual(response.status_code, 200)
+
+    def test_biddingsell_get_noproduct(self):
+        client   = Client()
+        response = client.get('/products/6/sellbidding')
+
+        self.assertEqual(response.status_code, 400)
+
+        self.assertEqual(response.json(),{
+            "MESSAGE" : "NO_PRODUCT"
+        })
