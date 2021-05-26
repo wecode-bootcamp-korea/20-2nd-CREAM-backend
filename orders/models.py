@@ -7,7 +7,7 @@ class Status(models.Model):
         return self.name
 
 class SellingInformation(models.Model):
-    price          = models.DecimalField(max_digits=None, decimal_places=4)
+    price          = models.DecimalField(max_digits=15, decimal_places=4)
     status         = models.ForeignKey("Status", models.SET_NULL, null=True)
     product_option = models.ForeignKey("products.ProductOption", on_delete=models.CASCADE)
     user           = models.ForeignKey('users.User', on_delete=models.CASCADE)
@@ -17,7 +17,7 @@ class SellingInformation(models.Model):
         db_table = "selling_informations"
 
 class BuyingInformation(models.Model):
-    price          = models.DecimalField(max_digits=None, decimal_places=4)
+    price          = models.DecimalField(max_digits=15, decimal_places=4)
     status         = models.ForeignKey("Status", models.SET_NULL, null=True)
     product_option = models.ForeignKey("products.ProductOption", on_delete=models.CASCADE)
     user           = models.ForeignKey('users.User', on_delete=models.CASCADE)

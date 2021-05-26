@@ -4,7 +4,7 @@ class User(models.Model):
     nickname  = models.CharField(max_length=45)
     email     = models.CharField(max_length=45, unique=True)
     password  = models.CharField(max_length=200)
-    point     = models.IntegerField()
+    point     = models.IntegerField(default=0)
     create_at = models.DateTimeField(auto_now_add=True)
     update_at = models.DateTimeField(auto_now=True)
 
