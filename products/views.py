@@ -152,3 +152,34 @@ class OrderHistory(View):
             return JsonResponse({"order_list" : order_list}, status = 200)
         
         return JsonResponse({"MESSAGE" : "NO_PRODUCT"}, status = 400)
+
+class SellBiddingDetail(View):
+    def get(self, request, product_id):
+        size        = request.GET.get("size", None)
+        sort_price  = request.GET.get("sort_price", "price")
+        sort_option = request.GET.get("sort_option", None)
+
+        if Product.objects.filter(id = product_id).exists():
+            status = Status.objects.get(name="입찰대기")
+
+            q = Q(product_option__product = product_id, status = status)
+            
+            if size:
+                q.add(Q(product_option__size = size), q.AND)
+
+            selling_information = SellingInformation.objects.filter(q).order_by(sort_price)
+
+            if sort_option:
+                selling_information = SellingInformation.objects.filter(q).order_by(sort_option, "price")
+
+            selling_bidding = [
+                {
+                    "size"  : selling.product_option.size,
+                    "price" : selling.price
+                    } 
+                    for selling in selling_information
+                    ]
+
+            return JsonResponse({"selling_bidding" : selling_bidding}, status = 200)
+
+        return JsonResponse({"MESSAGE" : "NO_PRODUCT"}, status = 400)
