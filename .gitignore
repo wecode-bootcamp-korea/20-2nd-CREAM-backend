@@ -3,6 +3,7 @@
 # Edit at https://www.toptal.com/developers/gitignore?templates=python,pycharm,visualstudiocode,vim,macos,linux,zsh
 
 my_settings.py
+data_uploader.py
 *.csv
 
 ### Linux ###
