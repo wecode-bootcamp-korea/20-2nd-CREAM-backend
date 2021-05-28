@@ -1,10 +1,55 @@
 import json
 
-from .models       import Collection, Product, ProductOption, ProductImage, Brand
-from orders.models import SellingInformation, BuyingInformation, Status, Order
-from users.models  import User
-from django.test   import TestCase
-from django.test   import Client
+from django.test     import TestCase
+from django.test     import Client
+
+from products.models import Collection, Product, ProductOption, ProductImage, Brand
+from orders.models   import SellingInformation, BuyingInformation, Status, Order
+from users.models    import User
+
+class ProductListTest(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        Brand.objects.create(id=1, name="브랜드", logo_image="brand_logo_image")
+        Collection.objects.create(id=1, name="컬렉션", brand_id=1)
+        Product.objects.create(id=1,korean_name = "상품", english_name="Product", limited=True, collection_id=1)
+        ProductImage.objects.create(id=1, product_id=1, image_url="prdocut_image_url")
+        ProductOption.objects.create(id=1, product_id=1, size="250")
+
+    def test_productlist_get_success(self):
+        client   = Client()
+        response = client.get('/products?collection_id=1')
+
+        self.assertEqual(response.json(), {
+            "result" : [
+                [
+                    {
+                        "brand_information"    : {
+                                                    "brand_id"       : 1,
+                                                    "brand_name"     : "브랜드",
+                                                    "brand_logo_url" : "brand_logo_image"
+                        },
+                        "collection_id"        : 1,
+                        "collection_name"      : "컬렉션",
+                        "product_id"           : 1,
+                        "product_korean_name"  : "상품",
+                        "product_english_name" : "Product",
+                        "product_limited"      : True,
+                        "product_main_image"   : "prdocut_image_url",
+                        "product_options"      : [
+                                                    {
+                                                        "size"       : "250",
+                                                        "buy_price"  : None,
+                                                        "sell_price" : None
+                                                    }
+                                                ]
+
+                    }
+                ]
+            ]
+            }
+        )
+        self.assertEqual(response.status_code, 200)
 
 class ProductTest(TestCase):
     def setUp(self):
