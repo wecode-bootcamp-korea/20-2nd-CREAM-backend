@@ -66,6 +66,7 @@ class ProductTest(TestCase):
         product_option = ProductOption.objects.create(product = product, size = "250")
 
         SellingInformation.objects.create(
+            id             = 1,
             price          = 240000,
             status         = status,
             user           = user1,
@@ -79,6 +80,7 @@ class ProductTest(TestCase):
         )
 
         BuyingInformation.objects.create(
+            id             = 1,
             price          = 200000,
             status         = status,
             user           = user2,
@@ -92,6 +94,12 @@ class ProductTest(TestCase):
             product_option = product_option
         )
 
+        Order.objects.create(
+            id                  = 1,
+            selling_information = SellingInformation.objects.get(id=1),
+            buying_information  = BuyingInformation.objects.get(id=1)
+        )
+
     def tearDown(self):
         Brand.objects.all().delete()
         Collection.objects.all().delete()
@@ -101,6 +109,7 @@ class ProductTest(TestCase):
         Status.objects.all().delete()
         SellingInformation.objects.all().delete()
         BuyingInformation.objects.all().delete()
+        Order.objects.all().delete()
 
     def test_productdetail_get_success(self):
         client   = Client()
@@ -120,7 +129,7 @@ class ProductTest(TestCase):
                         "sell_price" : "200000.0000"
                     }
                 ],
-                "lately_order" : None,
+                "lately_order" : "240000.0000",
             }
         })
         self.assertEqual(response.status_code, 200)
@@ -129,4 +138,27 @@ class ProductTest(TestCase):
         client   = Client()
         response = client.get('/products/2')
         
+        self.assertEqual(response.status_code, 400)
+
+    def test_orderhistory_get_success(self):
+        client   = Client()
+        response = client.get('/products/1/order')
+
+        self.assertEqual(response.json(),{
+            "order_list" : [
+                {
+                    "order_id"   : 1,
+                    "size"       : "250",
+                    "price"      : "240000.0000",
+                    "order_date" : "2021/06/02" 
+                    }
+            ]
+        })
+
+        self.assertEqual(response.status_code, 200)
+
+    def test_orderhistory_get_no_product(self):
+        client   = Client()
+        response = client.get('/products/10/order')
+
         self.assertEqual(response.status_code, 400)
