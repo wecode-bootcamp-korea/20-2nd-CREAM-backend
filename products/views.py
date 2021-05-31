@@ -1,9 +1,11 @@
+from datetime import timedelta
 import json
 
 from django.db.models.aggregates import Max, Min
 from django.db.models            import Q
 from django.http                 import JsonResponse
 from django.views                import View
+from django.utils                import timezone
 
 from products.models             import Product, ProductOption
 from orders.models               import SellingInformation, BuyingInformation, Status, Order
@@ -114,5 +116,39 @@ class ProductDetailView(View):
                 }
 
             return JsonResponse({"product_information" : product_information}, status=200)
+        
+        return JsonResponse({"MESSAGE" : "NO_PRODUCT"}, status = 400)
+
+class OrderHistory(View):
+    def get(self, request, product_id):
+        if Product.objects.filter(id = product_id).exists():
+            term   = request.GET.get("term", None)
+            size   = request.GET.get("size", None)
+            status = Status.objects.get(name="거래완료")
+            q      = Q(selling_information__product_option__product = product_id, selling_information__status = status)
+
+            if term:
+
+                if term == "month":
+                    endtime = timezone.now() - timedelta(days=30)
+
+                if term == "week":
+                    endtime = timezone.now() - timedelta(weeks=1)
+                
+                q.add(Q(create_at__gte = endtime), q.AND)
+
+            if size:
+                q.add(Q(selling_information__product_option__size=size), q.AND)
+                    
+
+            order_list = [
+                {
+                    "order_id"   : order.id,
+                    "size"       : order.selling_information.product_option.size,
+                    "price"      : order.selling_information.price,
+                    "order_date" : order.create_at.strftime("%Y/%m/%d")
+                    } for order in Order.objects.filter(q).order_by("-create_at")]
+
+            return JsonResponse({"order_list" : order_list}, status = 200)
         
         return JsonResponse({"MESSAGE" : "NO_PRODUCT"}, status = 400)
