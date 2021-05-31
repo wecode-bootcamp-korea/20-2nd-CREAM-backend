@@ -57,9 +57,9 @@ class ProductTest(TestCase):
         user1      = User.objects.create(social_login_id = "noogoo1982", nickname="누구쉰지", email="noogoo1982@gmail.com", point=0)
         user2      = User.objects.create(social_login_id = "noogoo1983", nickname="누구쒼지", email="noogoo1983@gmail.com", point=0)
         brand      = Brand.objects.create(name="나이키", logo_image="aa")
-        collection = Collection.objects.create(name="조던조던조던", brand = brand)
-        product    = Product.objects.create(id=1,korean_name = "조던", english_name="jordan", limited=True, collection = collection)
+        collection = Collection.objects.create(id=1, name="조던조던조던", brand = brand)
         
+        product    = Product.objects.create(id=1,korean_name = "조던", english_name="jordan", limited=True, collection = collection)      
         ProductImage.objects.create(product = product, image_url = "a")
         ProductImage.objects.create(product = product, image_url = "b")
         
@@ -101,6 +101,26 @@ class ProductTest(TestCase):
             buying_information  = BuyingInformation.objects.get(id=1)
         )
 
+        product = Product.objects.create(id=2,korean_name = "조던2", english_name="jordan2", limited=True, collection = collection)
+        ProductImage.objects.create(product = product, image_url = "a")
+        product_option = ProductOption.objects.create(product = product, size = "250")
+
+        SellingInformation.objects.create(
+            price          = 240000,
+            status         = status,
+            user           = user1,
+            product_option = product_option)
+
+        product = Product.objects.create(id=3,korean_name = "조던3", english_name="jordan3", limited=True, collection = collection)
+        ProductImage.objects.create(product = product, image_url = "a")
+        product_option = ProductOption.objects.create(product = product, size = "250")
+
+        SellingInformation.objects.create(
+            price          = 340000,
+            status         = status,
+            user           = user1,
+            product_option = product_option)
+
     def tearDown(self):
         Brand.objects.all().delete()
         Collection.objects.all().delete()
@@ -137,9 +157,13 @@ class ProductTest(TestCase):
 
     def test_productdetail_get_no_product(self):
         client   = Client()
-        response = client.get('/products/2')
+        response = client.get('/products/30')
         
         self.assertEqual(response.status_code, 400)
+
+        self.assertEqual(response.json(),{
+            "MESSAGE" : "NO_PRODUCT"
+        })
 
     def test_orderhistory_get_success(self):
         client   = Client()
@@ -164,6 +188,10 @@ class ProductTest(TestCase):
 
         self.assertEqual(response.status_code, 400)
 
+        self.assertEqual(response.json(),{
+            "MESSAGE" : "NO_PRODUCT"
+        })
+
     def test_biddingsell_get_success(self):
         client   = Client()
         response = client.get('/products/1/sellbidding')
@@ -187,6 +215,38 @@ class ProductTest(TestCase):
 
         self.assertEqual(response.status_code, 400)
 
+        self.assertEqual(response.json(),{
+            "MESSAGE" : "NO_PRODUCT"
+        })
+
+    def test_collection_get_success(self):
+        client   = Client()
+        response = client.get('/products/1/1')
+
+        self.assertEqual(response.json(), {
+            "collection_product" : 
+            [
+                {
+                    "english_name" : "jordan2",
+                    "buy_price" : "240000.0000",
+                    "main_image" : "a"
+                    },
+                    {
+                        "english_name" : "jordan3",
+                        "buy_price" : "340000.0000",
+                        "main_image" : "a"
+                        }
+                        ]
+                        })
+
+        self.assertEqual(response.status_code, 200)
+
+    def test_collection_get_no_product(self):
+        client   = Client()
+        response = client.get('/products/10/1')
+
+        self.assertEqual(response.status_code, 400)
+        
         self.assertEqual(response.json(),{
             "MESSAGE" : "NO_PRODUCT"
         })
