@@ -7,8 +7,8 @@ from django.http                 import JsonResponse
 from django.views                import View
 from django.utils                import timezone
 
-from products.models             import Product, ProductOption
-from orders.models               import SellingInformation, BuyingInformation, Status, Order
+from products.models import Product, ProductOption
+from orders.models   import SellingInformation, BuyingInformation, Status, Order
 
 class ProductListView(View):
     def get(self, request):
@@ -182,4 +182,22 @@ class SellBiddingDetail(View):
 
             return JsonResponse({"selling_bidding" : selling_bidding}, status = 200)
 
+        return JsonResponse({"MESSAGE" : "NO_PRODUCT"}, status = 400)
+
+class CollectionView(View):
+    def get(self, request, product_id, collection_id):
+        if Product.objects.filter(id = product_id).exists():
+            
+            collection_product = [
+                {
+                    "english_name" : product.english_name,
+                    "buy_price"    : SellingInformation.objects.filter(product_option__product = product).aggregate(Min("price"))["price__min"],
+                    "main_image"   : product.productimage_set.filter()[0].image_url
+                    }
+                for product in Product.objects.filter(collection = collection_id).order_by("?") 
+                if product.id != product_id
+                ]
+            
+            return JsonResponse({"collection_product" : collection_product}, status = 200)
+        
         return JsonResponse({"MESSAGE" : "NO_PRODUCT"}, status = 400)
