@@ -89,3 +89,55 @@ class KakaoLoginTest(TestCase):
 
         self.assertEqual(response.status_code, 401)
         self.assertEqual(response.json(), {'message': 'INVALID_TOKEN'})
+
+class MyPageTest(TestCase):
+    def setUp(self):
+        login_user = User.objects.create(
+            id              = 1,
+            social_login_id = "abcd1234",
+            nickname        = "CREAM",
+            email           = "cream@abc.com",
+            point           = 10000
+        )
+        
+        self.cream_token = jwt.encode({'user_id': login_user.id}, SECRET, algorithm='HS256')
+
+    def tearDown(self):
+        User.objects.all().delete()
+    
+    def test_mypage_information_get_success(self):
+        client   = Client()
+        headers  = {"HTTP_AUTHORIZATION":self.cream_token}
+        response = client.get('/users/mypage', **headers)
+        
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), {
+            "result": [
+                {
+                    "user_information" : {
+                                            "user_id"       : 1,
+                                            "user_nickname" : "CREAM",
+                                            "user_email"    : "cream@abc.com",
+                                            "user_point"    : 10000,
+                    },
+                    "sell_biddings"    : {
+                                            "sell_all"        : 0,
+                                            "sell_proceeding" : 0,
+                                            "sell_finished"   : 0
+                    },
+                    "buy_biddings"     : {
+                                            "buy_all"        : 0,
+                                            "buy_proceeding" : 0,
+                                            "buy_finished"   : 0
+                    }
+                }
+            ]
+        })
+    
+    def test_mypage_information_login_required(self):
+        client   = Client()
+        headers  = {"HTTP_AUTHORIZATION": None}
+        response = client.get('/users/mypage', **headers)
+        
+        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.json(), {'message': 'NEED_LOGIN'})
