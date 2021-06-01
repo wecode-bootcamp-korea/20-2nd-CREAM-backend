@@ -8,7 +8,6 @@ from django.views                import View
 from products.models import Product, ProductOption, ProductImage
 from orders.models   import SellingInformation, BuyingInformation, Status, Order
 
-
 class ProductDetailView(View):
     def get(self, request, product_id):
         if Product.objects.filter(id = product_id).exists():
