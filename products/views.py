@@ -184,6 +184,37 @@ class SellBiddingDetail(View):
 
         return JsonResponse({"MESSAGE" : "NO_PRODUCT"}, status = 400)
 
+class BuyBiddingDetail(View):
+    def get(self, request, product_id):
+        size = request.GET.get("size", None)
+        sort_price = request.GET.get("sort_price", "-price")
+        sort_option = request.GET.get("sort_option", None)
+
+        if Product.objects.filter(id = product_id).exists():
+            status = Status.objects.get(name="입찰대기")
+
+            q = Q(product_option__product = product_id, status = status)
+            
+            if size:
+                q.add(Q(product_option__size = size), q.AND)
+
+            buying_information = BuyingInformation.objects.filter(q).order_by(sort_price)
+
+            if sort_option:
+                buying_information = BuyingInformation.objects.filter(q).order_by(sort_option, "-price")
+
+            buying_bidding = [
+                {
+                    "size"  : buying.product_option.size,
+                    "price" : buying.price
+                    } 
+                    for buying in buying_information
+                    ]
+
+            return JsonResponse({"buying_bidding" : buying_bidding}, status = 200)
+
+        return JsonResponse({"MESSAGE" : "NO_PRODUCT"}, status = 400)
+
 class CollectionView(View):
     def get(self, request, product_id, collection_id):
         if Product.objects.filter(id = product_id).exists():

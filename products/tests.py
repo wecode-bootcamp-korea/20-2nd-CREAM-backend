@@ -205,9 +205,7 @@ class ProductTest(TestCase):
                     {"size" : "250",
                     "price" : "340000.0000"
                     }
-                    ]})
-
-        self.assertEqual(response.status_code, 200)
+            ]})
 
     def test_biddingsell_get_noproduct(self):
         client   = Client()
@@ -250,3 +248,26 @@ class ProductTest(TestCase):
         self.assertEqual(response.json(),{
             "MESSAGE" : "NO_PRODUCT"
         })
+
+    def test_biddingbuy_get_success(self):
+        client   = Client()
+        response = client.get('/products/1/buybidding')
+
+        self.assertEqual(response.json(),{
+            "buying_bidding" : [
+                {
+                    "size" : "250",
+                    "price" : "200000.0000"
+                    },
+                    {"size" : "250",
+                    "price" : "190000.0000"
+                    }
+                    ]})
+
+        self.assertEqual(response.status_code, 200)
+
+    def test_biddingbuy_get_noproduct(self):
+        client   = Client()
+        response = client.get('/products/6/buybidding')
+
+        self.assertEqual(response.status_code, 400)
