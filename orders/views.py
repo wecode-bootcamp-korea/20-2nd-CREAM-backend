@@ -116,5 +116,47 @@ class SellView(View):
             "user_point"    : user.point,
             "size"          : size
         }
-
         return JsonResponse({"product_information" : product_information}, status=200)
+
+    @login_confirm
+    def post(self, request, product_id):
+        data    = json.loads(request.body)
+        sell    = request.GET.get("sell", None)
+        user    = request.user
+        product = Product.objects.get(id = product_id)
+      
+        if sell == "selling":
+            status             = Status.objects.get(name="거래완료")                     
+            buy_user           = User.objects.get(id = data["buy_user"])                 
+            buy_product        = BuyingInformation.objects.get(id = data["buying_id"])  
+            buy_product.status = status                                                
+            buy_product.save()                                                         
+
+            sell_product  = SellingInformation.objects.create(
+                user           = user,
+                status         = status,
+                price          = buy_product.price,
+                product_option = buy_product.product_option
+                )                                                                         
+
+            Order.objects.create(selling_information = sell_product, buying_information = buy_product)
+
+            user.point = user.point + int(sell_product.price)                           
+            user.save()
+
+            buy_user.point = buy_user.point - int(buy_product.price)                     
+            buy_user.save()
+
+            return JsonResponse({"MESSAGE" : "ORDER_SUCCESS"}, status=201)
+                                                                         
+        status         = Status.objects.get(name="입찰대기")                                  
+        product_option = ProductOption.objects.get(product = product, size=data["size"])
+
+        SellingInformation.objects.create(
+            user           = user,
+            price          = data["price"],
+            status         = status,
+            product_option = product_option
+            )                                    
+            
+        return JsonResponse({"MESSAGE" : "BIDDING_SUCCESS"}, status=201)
