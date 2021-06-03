@@ -7,14 +7,14 @@ from my_settings  import SECRET
 
 def login_confirm(original_function):
 
-    def wrapper(self, request, product_id):
+    def wrapper(self, request, **kwargs):
         try:
             token = request.headers.get("Authorization", None)
             if token:
                 token_payload = jwt.decode(token, SECRET, algorithms='HS256')
                 user          = User.objects.get(id=token_payload['user_id'])
                 request.user  = user
-                return original_function(self, request, product_id)
+                return original_function(self, request, **kwargs)
                 
             return JsonResponse({'message': 'NEED_LOGIN'}, status=401)
 
