@@ -37,8 +37,56 @@ class BuyView(View):
             "user_point"    : user.point,
             "size"          : size
         }
-
         return JsonResponse({"product_information" : product_information}, status=200)
+
+    @login_confirm
+    def post(self, request, product_id):
+        data    = json.loads(request.body)
+        buy     = request.GET.get("buy", None)
+        user    = request.user
+        product = Product.objects.get(id = product_id)
+
+        
+        if buy == "buying":
+            if user.point < SellingInformation.objects.get(id = data["selling_id"]).price:
+                return JsonResponse({"MESSAGE" : "INSUFFICIENT_POINT"}, status = 400)
+
+            status              = Status.objects.get(name="거래완료")
+            sell_user           = User.objects.get(id = data["sell_user"])
+            sell_product        = SellingInformation.objects.get(id = data["selling_id"])
+            sell_product.status = status
+            sell_product.save()
+
+            buy_product  = BuyingInformation.objects.create(
+                user           = user,
+                status         = status,
+                price          = sell_product.price,
+                product_option = sell_product.product_option
+                )
+
+            Order.objects.create(selling_information = sell_product, buying_information = buy_product)
+
+            user.point = user.point - int(sell_product.price)
+            user.save()
+
+            sell_user.point = sell_user.point + int(sell_product.price)
+            sell_user.save()
+
+            return JsonResponse({"MESSAGE" : "ORDER_SUCCESS"}, status=201)
+
+        if user.point < int(data["price"]):
+            return JsonResponse({"MESSAGE" : "INSUFFICIENT_POINT"}, status=400)
+
+        status         = Status.objects.get(name="입찰대기")
+        product_option = ProductOption.objects.get(product = product, size=data["size"])
+
+        BuyingInformation.objects.create(
+            user           = user,
+            price          = data["price"],
+            status         = status,
+            product_option = product_option
+            )           
+        return JsonResponse({"MESSAGE" : "BIDDING_SUCCESS"}, status=201)
 
 class SellView(View):
     @login_confirm
