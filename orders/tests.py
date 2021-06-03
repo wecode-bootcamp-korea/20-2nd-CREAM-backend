@@ -1,12 +1,9 @@
-from django.test import TestCase
-
 from django.test     import TestCase
 from django.test     import Client
 
 from products.models import Collection, Product, ProductOption, ProductImage, Brand
 from orders.models   import SellingInformation, BuyingInformation, Status, Order
 from users.models    import User
-
 
 class OrderTest(TestCase):
     def setUp(self):
@@ -82,6 +79,44 @@ class OrderTest(TestCase):
                 "selling_user"  : None,
                 "selling_id"    : None,
                 "buying_price"  : None,
+                "user_point"    : 0,
+                "size"          : "250"
+            }
+        })
+        self.assertEqual(response.status_code, 200)
+
+    def test_order_sell_get_success(self):
+        client   = Client()
+        response = client.get('/orders/sell/1?size=250')
+
+        self.assertEqual(response.json(),{
+            "product_information" : {
+                "korean_name"   : "조던",
+                "english_name"  : "jordan",
+                "image"         : "a",
+                "selling_price" : "200000.0000",
+                "buying_price"  : "240000.0000",
+                "buying_user"   : 2,
+                "buying_id"     : 1,
+                "user_point"    : 0,
+                "size"          : "250"
+            }
+        })
+        self.assertEqual(response.status_code, 200)
+
+    def test_order_sell_get_success_null(self):
+        client   = Client()
+        response = client.get('/orders/sell/2?size=250')
+
+        self.assertEqual(response.json(),{
+            "product_information" : {
+                "korean_name"   : "조던2",
+                "english_name"  : "jordan",
+                "image"         : "a",
+                "selling_price" : None,
+                "buying_price"  : None,
+                "buying_user"   : None,
+                "buying_id"     : None,
                 "user_point"    : 0,
                 "size"          : "250"
             }
