@@ -70,8 +70,8 @@ class ProductListView(View):
                     "product_options"      : [
                                                 {
                                                     "size"       : option.size,
-                                                    "buy_price"  : option.sellinginformation_set.filter(product_option_id=option.id).all().order_by('price')[0].price if option.sellinginformation_set.filter(product_option_id=option.id).exists() else None,
-                                                    "sell_price" : option.buyinginformation_set.filter(product_option_id=option.id).all().order_by('-price')[0].price if option.buyinginformation_set.filter(product_option_id=option.id).exists() else None
+                                                    "sell_price"  : option.sellinginformation_set.filter(product_option_id=option.id, status_id=2).all().order_by('price')[0].price if option.sellinginformation_set.filter(product_option_id=option.id, status_id=2).exists() else None,
+                                                    "buy_price" : option.buyinginformation_set.filter(product_option_id=option.id, status_id=2).all().order_by('-price')[0].price if option.buyinginformation_set.filter(product_option_id=option.id, status_id=2).exists() else None
                                                 } for option in product.productoption_set.filter(q_size)
                                             ]
 
